@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epennzy Market - Dark Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; color: #D1D5DB; overflow-x: hidden;}
+        .page { display: none; opacity: 0; transform: translateX(20px); transition: opacity 0.3s ease-out, transform 0.3s ease-out; will-change: opacity, transform; }
+        .page.active { display: block; opacity: 1; transform: translateX(0); }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .category-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .header-dark { color: #F3F4F6; }
+        .input-dark { background-color: #1F2937; border-color: #4B5563; color: #F3F4F6; transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .input-dark::placeholder { color: #6B7280; }
+        .input-dark:focus { border-color: #4B5563; outline: none; box-shadow: none; ring-width: 0; }
+        .card-dark { background-color: #1F2937; border-color: #374151; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .card-dark:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .text-main-dark { color: #E5E7EB; }
+        .text-secondary-dark { color: #9CA3AF; }
+        .text-accent-dark { color: #34D399; }
+        .button-accent-dark { background-color: #10B981; color: white; transition: background-color 0.2s ease-in-out, transform 0.1s ease-in; }
+        .button-accent-dark:hover { background-color: #059669; }
+        .button-accent-dark:active { transform: scale(0.98); }
+        .active-category-dark { background-color: #10B981; color: white; }
+        .inactive-category-dark { background-color: #374151; color: #D1D5DB; }
+        .bottom-nav-dark { background-color: #1F2937; border-top-color: #374151; }
+        .bottom-nav-icon-dark { fill: #9CA3AF; transition: fill 0.2s ease-in-out; }
+        .bottom-nav-icon-dark.active { fill: #34D399; }
+        .bottom-nav-item:hover .bottom-nav-icon-dark { fill: #6EE7B7; }
+        .modal-container { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(3px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease-in-out;}
+        .modal-container.active { display: flex; opacity: 1; }
+        .modal-content-dark { background-color: #1F2937; border-color: #4B5563; transform: scale(0.95); transition: transform 0.3s ease-out; width: 90%; max-width: 450px; }
+        .modal-container.active .modal-content-dark { transform: scale(1); }
+        .modal-header-dark { color: #F3F4F6; }
+        .modal-body-dark { color: #D1D5DB; white-space: pre-wrap; }
+        .modal-close-button-dark { background-color: #10B981; color: white; }
+        .gemini-button-dark { background-color: #4F46E5; color: white; transition: background-color 0.2s ease-in-out; }
+        .gemini-button-dark:hover { background-color: #4338CA; }
+        .payment-option { background-color: #374151; border: 1px solid #4B5563; padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; }
+        .payment-option h3 { color: #E5E7EB; font-weight: 600; }
+        .payment-option p { color: #D1D5DB; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
+        .copy-button { background: none; border: none; padding: 0.25rem; cursor: pointer; color: #34D399; }
+        .copy-button:hover { color: #6EE7B7; }
+        .copy-button svg { width: 1.25rem; height: 1.25rem; }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .hidden { display: none !important; }
+        .order-history-item { background-color: #1F2937; border: 1px solid #374151; margin-bottom: 1rem; padding: 1rem; border-radius: 0.5rem; }
+        .order-history-item h4 { color: #E5E7EB; font-weight: 600; }
+        .order-history-item p { color: #D1D5DB; font-size: 0.9rem; }
+        .order-history-item ul { list-style-type: disc; margin-left: 1.25rem; font-size: 0.85rem; color: #9CA3AF; }
+    </style>
+</head>
+<body class="max-w-md mx-auto shadow-lg">
+
+    <div id="app" class="relative min-h-screen pb-20">
+
+        <div id="discoverPage" class="page p-4">
+            <header class="flex justify-between items-center mb-4">
+                <a href="#" onclick="event.preventDefault(); navigateTo('discoverPage');" title="Beranda Epennzy Market">
+                    <img src="https://i.top4top.io/p_3437qi8j20.png" alt="Epennzy Market Logo" class="h-12">
+                </a>
+                <button id="notificationButton" aria-label="Notifikasi" class="text-secondary-dark hover:text-main-dark p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                </button>
+            </header>
+            <div id="searchContainer" class="relative mb-4 hidden">
+                <input type="text" id="searchInput" placeholder="Cari produk digital..." class="w-full p-3 pl-10 rounded-lg input-dark">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <button id="filterButton" aria-label="Filter Produk" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-secondary-dark"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4m0 0v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4m6-14v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4m0 0V4" /></svg></button>
+            </div>
+            <div class="mb-4"><h3 class="text-lg font-semibold text-main-dark mb-2">Kategori</h3><div id="categoryContainer" class="flex space-x-2 overflow-x-auto category-scroll pb-2" role="tablist"></div></div>
+            <div id="productGrid" class="grid grid-cols-2 gap-4"></div>
+            <div id="testimonialsSection" class="mb-6 mt-8 border-t border-gray-700 pt-6">
+                <h3 class="text-lg font-semibold text-main-dark mb-3 text-center">Ulasan Pelanggan (241)</h3>
+                <div id="testimonialsContainer" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <div id="savedItemsPage" class="page p-4"><header class="flex items-center mb-4"><button onclick="navigateTo('discoverPage')" class="mr-3 text-secondary-dark"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button><h1 class="text-2xl font-bold header-dark">Saved Items</h1></header><div id="savedItemsContainer" class="space-y-4"><p class="text-secondary-dark text-center">Belum ada item yang disimpan.</p></div></div>
+        
+        <div id="cartPage" class="page p-4"><header class="flex items-center mb-4"><button onclick="navigateTo('discoverPage')" class="mr-3 text-secondary-dark"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button><h1 class="text-2xl font-bold header-dark">My Cart</h1></header><div id="cartItemsContainer" class="space-y-3 mb-6"><p class="text-secondary-dark text-center">Keranjang belanja Anda kosong.</p></div><div id="cartSummary" class="border-t border-gray-700 pt-4"><div class="flex justify-between items-center mb-2 text-main-dark"><span>Sub-total</span><span id="cartSubtotal">Rp0</span></div><div class="flex justify-between items-center mb-2 text-main-dark"><span>Biaya Pengiriman</span><span>Rp0</span></div><div class="flex justify-between items-center mb-4 text-gray-100 font-bold text-lg"><span>Total</span><span id="cartTotal">Rp0</span></div><button onclick="navigateTo('checkoutPage')" id="goToCheckoutButton" class="w-full button-accent-dark py-3 rounded-lg font-semibold transition disabled:opacity-50">Lanjutkan ke Pembayaran</button></div></div>
+        
+        <div id="productDetailPage" class="page p-4">
+            <header class="flex items-center mb-4"><button onclick="goBack()" class="mr-3 text-secondary-dark"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button><h1 id="productDetailName" class="text-2xl font-bold header-dark">Nama Produk</h1></header>
+            <img id="productDetailImage" src="https://placehold.co/600x400/374151/9CA3AF?text=Produk" alt="Product Image" class="w-full h-64 object-cover rounded-lg mb-4">
+            <div class="flex justify-between items-center mb-2">
+                <p id="productDetailPrice" class="text-2xl font-bold text-accent-dark">Rp0</p>
+                <button id="productDetailSaveButton" class="text-gray-500 hover:text-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></button>
+            </div>
+            <p id="productDetailDuration" class="text-sm text-secondary-dark mb-4"></p>
+            <h3 class="text-lg font-semibold text-main-dark mb-2">Deskripsi:</h3>
+            <ul id="productDetailDescription" class="list-disc list-inside text-secondary-dark space-y-1 mb-6"></ul>
+            <div class="space-y-3">
+                <button id="productDetailAddToCartButton" class="w-full button-accent-dark py-3 rounded-lg font-semibold transition">Tambah ke Keranjang</button>
+                <button id="productDetailShareButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                    </svg>
+                    <span>Bagikan Produk</span>
+                </button>
+                <button id="getUsageIdeasButton" class="w-full gemini-button-dark py-3 rounded-lg font-semibold transition">✨ Dapatkan Ide Penggunaan</button>
+            </div>
+        </div>
+
+        <div id="checkoutPage" class="page p-4">
+            <header class="flex items-center mb-6">
+                <button onclick="navigateTo('cartPage')" class="mr-3 text-secondary-dark"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+                <h1 class="text-2xl font-bold header-dark">Instruksi Pembayaran</h1>
+            </header>
+            <div id="buyerInfoForm" class="space-y-4 mb-6">
+                <div><label for="buyerName" class="block text-sm font-medium text-main-dark mb-1">Nama Lengkap Anda</label><input type="text" id="buyerName" name="buyerName" required class="w-full p-2 rounded-md input-dark" placeholder="Nama untuk konfirmasi"></div>
+                <div><label for="buyerWhatsApp" class="block text-sm font-medium text-main-dark mb-1">Nomor WhatsApp Anda</label><input type="tel" id="buyerWhatsApp" name="buyerWhatsApp" required placeholder="Nomor WA untuk dihubungi" class="w-full p-2 rounded-md input-dark"></div>
+            </div>
+            <h2 class="text-lg font-semibold mb-3 text-main-dark">Pilih Metode Pembayaran Manual:</h2>
+            <div class="payment-option">
+                <h3>GoPay</h3>
+                <p><span>Nomor: <strong>089654291565</strong></span><button onclick="copyToClipboard('089654291565', 'Nomor GoPay')" class="copy-button" aria-label="Salin Nomor GoPay"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v1.006a.75.75 0 01-.75.75H2.25a.75.75 0 01-.75-.75V7.5a.75.75 0 01.75-.75H8.5a.75.75 0 01.75.75v1.006a3 3 0 01-1.5 2.684L7.5 12.375l-.75-.375a.75.75 0 00-.91-.192 1.5 1.5 0 00-1.077 1.705l.344 1.032c.319.957-.457 1.956-1.464 1.956H2.25a.75.75 0 01-.75-.75V7.5a.75.75 0 01.75-.75H8.5a.75.75 0 01.75.75V8.56a3 3 0 01-1.5 2.684L7.5 12.375l-.75-.375a.75.75 0 00-.91-.192 1.5 1.5 0 00-1.077 1.705l.344 1.032c.319.957-.457 1.956-1.464 1.956H2.25zM12 21a3 3 0 100-6 3 3 0 000 6zm9-9a3 3 0 100-6 3 3 0 000 6z" /></svg></button></p>
+                <p>Atas Nama: <strong>Jajang Nurjaman</strong></p>
+            </div>
+            <div class="payment-option">
+                <h3>Dana</h3>
+                <p><span>Nomor: <strong>089654291565</strong></span><button onclick="copyToClipboard('089654291565', 'Nomor Dana')" class="copy-button" aria-label="Salin Nomor Dana"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v1.006a.75.75 0 01-.75.75H2.25a.75.75 0 01-.75-.75V7.5a.75.75 0 01.75-.75H8.5a.75.75 0 01.75.75v1.006a3 3 0 01-1.5 2.684L7.5 12.375l-.75-.375a.75.75 0 00-.91-.192 1.5 1.5 0 00-1.077 1.705l.344 1.032c.319.957-.457 1.956-1.464 1.956H2.25a.75.75 0 01-.75-.75V7.5a.75.75 0 01.75-.75H8.5a.75.75 0 01.75.75V8.56a3 3 0 01-1.5 2.684L7.5 12.375l-.75-.375a.75.75 0 00-.91-.192 1.5 1.5 0 00-1.077 1.705l.344 1.032c.319.957-.457 1.956-1.464 1.956H2.25zM12 21a3 3 0 100-6 3 3 0 000 6zm9-9a3 3 0 100-6 3 3 0 000 6z" /></svg></button></p>
+                <p>Atas Nama: <strong>Idah Karsidah</strong></p>
+            </div>
+            <div class="payment-option">
+                <h3>Bank BCA</h3>
+                <p><span>No. Rekening: <strong>7753160550</strong></span><button onclick="copyToClipboard('7753160550', 'Nomor Rekening BCA')" class="copy-button" aria-label="Salin Nomor Rekening BCA"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v1.006a.75.75 0 01-.75.75H2.25a.75.75 0 01-.75-.75V7.5a.75.75 0 01.75-.75H8.5a.75.75 0 01.75.75v1.006a3 3 0 01-1.5 2.684L7.5 12.375l-.75-.375a.75.75 0 00-.91-.192 1.5 1.5 0 00-1.077 1.705l.344 1.032c.319.957-.457 1.956-1.464 1.956H2.25a.75.75 0 01-.75-.75V7.5a.75.75 0 01.75-.75H8.5a.75.75 0 01.75.75V8.56a3 3 0 01-1.5 2.684L7.5 12.375l-.75-.375a.75.75 0 00-.91-.192 1.5 1.5 0 00-1.077 1.705l.344 1.032c.319.957-.457 1.956-1.464 1.956H2.25zM12 21a3 3 0 100-6 3 3 0 000 6zm9-9a3 3 0 100-6 3 3 0 000 6z" /></svg></button></p>
+                <p>Atas Nama: <strong id="bcaAccountNameText">JAJANG NURJAMAN</strong></p>
+            </div>
+            <button onclick="navigateTo('qrisPage')" class="w-full button-accent-dark py-3 rounded-lg font-semibold transition mt-2 mb-6">Bayar dengan QRIS</button>
+            <div class="mt-6 p-4 bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg text-yellow-200">
+                <h3 class="font-semibold text-md mb-2">PENTING: Instruksi Konfirmasi</h3>
+                <ol class="list-decimal list-inside text-sm space-y-1">
+                    <li>Lakukan pembayaran ke salah satu rekening/e-wallet di atas sejumlah <strong id="checkoutTotalAmountDisplay" class="text-yellow-100">Rp0</strong>.</li>
+                    <li>Ambil screenshot (bukti transfer) pembayaran Anda.</li>
+                    <li>Klik tombol di bawah untuk konfirmasi pesanan Anda melalui WhatsApp.</li>
+                    <li>Kirimkan bukti transfer beserta nama dan detail pesanan Anda kepada kami.</li>
+                </ol>
+            </div>
+            <button id="confirmViaWhatsAppButton" class="w-full button-accent-dark py-3 rounded-lg font-semibold transition mt-6">Konfirmasi Pembayaran via WhatsApp</button>
+        </div>
+
+        <div id="qrisPage" class="page p-4"><header class="flex items-center mb-6"><button onclick="navigateTo('checkoutPage')" class="mr-3 text-secondary-dark"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button><h1 class="text-2xl font-bold header-dark">Pembayaran QRIS</h1></header><div class="text-center"><img id="qrisImage" src="https://placehold.co/350x350/FFFFFF/111827?text=QRIS+ANDA" alt="QRIS Epennzy Market" class="mx-auto mb-4 border-4 border-gray-700 rounded-lg"><p class="text-main-dark mb-2">Silakan scan QRIS di atas.</p><p class="text-secondary-dark mb-1">Total Pembayaran: <strong id="qrisTotalAmountDisplay" class="text-main-dark">Rp0</strong></p><p class="text-yellow-300 text-sm mb-4">PENTING: Setelah bayar, screenshot bukti pembayaran.</p><button id="qrisPaidButton" class="w-full button-accent-dark py-3 rounded-lg font-semibold transition">Saya Sudah Bayar & Konfirmasi</button></div></div>
+        
+        <div id="orderConfirmationPage" class="page p-4"><header class="flex items-center mb-6"><button onclick="navigateTo('checkoutPage')" class="mr-3 text-secondary-dark"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button><h1 id="orderConfirmationTitle" class="text-2xl font-bold header-dark mb-2">Konfirmasi Pesanan Anda</h1></header><div class="text-center"><svg xmlns="http://www.w3.org/2000/svg" id="orderConfirmationIcon" class="h-16 w-16 text-emerald-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><p id="orderConfirmationMessage" class="text-secondary-dark mb-4">Segera hubungi kami via WhatsApp.</p><div id="orderInfo" class="text-sm text-secondary-dark mb-4 p-3 bg-gray-800 rounded-md text-left card-dark"></div><div id="finalWhatsAppButtonContainer" class="my-6"></div><button onclick="navigateTo('discoverPage')" class="button-accent-dark py-2 px-6 rounded-lg font-semibold transition">Kembali ke Beranda</button></div></div>
+
+        <div id="orderHistoryPage" class="page p-4">
+            <header class="flex items-center mb-6">
+                <button onclick="navigateTo('discoverPage')" class="mr-3 text-secondary-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <h1 class="text-2xl font-bold header-dark">Riwayat Pesanan Saya</h1>
+            </header>
+            <div id="orderHistoryContainer" class="space-y-4">
+                <p class="text-secondary-dark text-center">Belum ada riwayat pesanan.</p>
+            </div>
+        </div>
+
+        <div id="infoPage" class="page p-4">
+            <header class="flex items-center mb-6">
+                <button onclick="navigateTo(previousPage || 'discoverPage')" class="mr-3 text-secondary-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <h1 class="text-2xl font-bold header-dark">Informasi</h1>
+            </header>
+            <div class="space-y-3">
+                <button onclick="navigateTo('faqPage')" class="w-full text-left p-3 card-dark rounded-lg hover:bg-gray-700 transition flex justify-between items-center">
+                    <span>Pertanyaan Umum (FAQ)</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+                <button onclick="navigateTo('contactPage')" class="w-full text-left p-3 card-dark rounded-lg hover:bg-gray-700 transition flex justify-between items-center">
+                    <span>Hubungi Kami</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+                <button onclick="navigateTo('termsPage')" class="w-full text-left p-3 card-dark rounded-lg hover:bg-gray-700 transition flex justify-between items-center">
+                    <span>Syarat & Ketentuan</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+                 <button onclick="navigateTo('orderHistoryPage')" class="w-full text-left p-3 card-dark rounded-lg hover:bg-gray-700 transition flex justify-between items-center">
+                    <span>Riwayat Pesanan</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="faqPage" class="page p-4">
+            <header class="flex items-center mb-6">
+                <button onclick="navigateTo('infoPage')" class="mr-3 text-secondary-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <h1 class="text-2xl font-bold header-dark">Pertanyaan Umum (FAQ)</h1>
+            </header>
+            <div class="space-y-4 text-secondary-dark">
+                <div>
+                    <h3 class="text-lg font-semibold text-main-dark">Bagaimana cara memesan produk?</h3>
+                    <p>Anda dapat memilih produk yang diinginkan, menambahkannya ke keranjang, lalu melanjutkan ke halaman pembayaran untuk instruksi lebih lanjut.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-main-dark">Metode pembayaran apa saja yang diterima?</h3>
+                    <p>Kami menerima pembayaran melalui GoPay, Dana, dan transfer Bank BCA. Detail nomor rekening/telepon tersedia di halaman pembayaran.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-main-dark">Berapa lama proses pengiriman akun setelah pembayaran?</h3>
+                    <p>Setelah Anda melakukan konfirmasi pembayaran melalui WhatsApp beserta bukti transfer, akun akan segera kami proses dan kirimkan biasanya dalam waktu 15-60 menit, tergantung antrian.</p>
+                </div>
+                 <div>
+                    <h3 class="text-lg font-semibold text-main-dark">Apakah produk bergaransi?</h3>
+                    <p>Ya, sebagian besar produk kami memiliki garansi. Detail garansi spesifik untuk setiap produk tertera pada deskripsi produk masing-masing.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-main-dark">Bagaimana jika saya lupa menyimpan atau salah menutup halaman konfirmasi WhatsApp?</h3>
+                    <p>Anda dapat menemukan riwayat pesanan Anda (termasuk total dan item) di halaman 'Info' lalu 'Riwayat Pesanan'. Dari sana, Anda dapat menghubungi kami kembali melalui WhatsApp dengan detail pesanan yang ada.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="contactPage" class="page p-4">
+            <header class="flex items-center mb-6">
+                <button onclick="navigateTo('infoPage')" class="mr-3 text-secondary-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <h1 class="text-2xl font-bold header-dark">Hubungi Kami</h1>
+            </header>
+            <div class="space-y-4 text-secondary-dark">
+                <p>Jika Anda memiliki pertanyaan lebih lanjut, kritik, atau saran, jangan ragu untuk menghubungi kami melalui:</p>
+                <ul class="list-disc list-inside">
+                    <li>WhatsApp: <a href="https://wa.me/6289654291565" target="_blank" class="text-accent-dark hover:underline">0896-5429-1565</a> (Jajang N)</li>
+                    <li>Email: <a href="mailto:admin@epennzy.my.id" class="text-accent-dark hover:underline">admin@epennzy.my.id</a></li>
+                </ul>
+                 <p class="mt-4">Alamat (Hanya untuk keperluan administrasi, bukan toko fisik):</p>
+                <p>Rancaekek, Kabupaten Bandung, Jawa Barat, Indonesia.</p>
+            </div>
+        </div>
+
+        <div id="termsPage" class="page p-4">
+            <header class="flex items-center mb-6">
+                <button onclick="navigateTo('infoPage')" class="mr-3 text-secondary-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <h1 class="text-2xl font-bold header-dark">Syarat & Ketentuan</h1>
+            </header>
+            <div class="space-y-3 text-secondary-dark text-sm leading-relaxed">
+                <p>Selamat datang di Epennzy Market. Dengan mengakses atau menggunakan layanan kami, Anda setuju untuk terikat oleh Syarat dan Ketentuan ini. Mohon dibaca dengan seksama.</p>
+                
+                <h3 class="text-md font-semibold text-main-dark pt-2">1. Definisi</h3>
+                <ul class="list-disc list-inside pl-4">
+                    <li>"Kami", "Kita", atau "Penjual" merujuk pada Epennzy Market.</li>
+                    <li>"Anda" atau "Pengguna" merujuk pada individu atau entitas yang mengakses atau menggunakan layanan kami.</li>
+                    <li>"Produk" merujuk pada barang digital atau layanan yang ditawarkan di Epennzy Market.</li>
+                </ul>
+
+                <h3 class="text-md font-semibold text-main-dark pt-2">2. Pemesanan dan Pembayaran</h3>
+                <ul class="list-disc list-inside pl-4">
+                    <li>Semua harga produk tercantum dalam Rupiah (IDR).</li>
+                    <li>Pemesanan dianggap sah setelah pembayaran penuh diterima dan dikonfirmasi.</li>
+                    <li>Metode pembayaran yang diterima adalah yang tercantum pada halaman checkout.</li>
+                    <li>Anda bertanggung jawab untuk memastikan detail pembayaran dan informasi kontak yang diberikan akurat.</li>
+                </ul>
+
+                <h3 class="text-md font-semibold text-main-dark pt-2">3. Pengiriman Produk Digital</h3>
+                 <ul class="list-disc list-inside pl-4">
+                    <li>Produk digital akan dikirimkan sesuai dengan instruksi yang diberikan setelah konfirmasi pembayaran.</li>
+                    <li>Waktu pengiriman dapat bervariasi, namun kami berusaha untuk memproses secepat mungkin. Estimasi waktu akan diinformasikan jika terjadi penundaan.</li>
+                </ul>
+
+                <h3 class="text-md font-semibold text-main-dark pt-2">4. Garansi dan Pengembalian Dana</h3>
+                 <ul class="list-disc list-inside pl-4">
+                    <li>Garansi produk berlaku sesuai dengan deskripsi yang tertera pada masing-masing produk.</li>
+                    <li>Klaim garansi harus disertai dengan bukti pembelian yang sah dan detail masalah yang dialami.</li>
+                    <li>Pengembalian dana hanya dapat dipertimbangkan dalam kasus tertentu sesuai kebijakan kami, misalnya jika produk tidak dapat disediakan atau terjadi kesalahan fatal dari pihak kami.</li>
+                    <li>Untuk produk akun (sharing/private), garansi tidak berlaku jika masalah disebabkan oleh pelanggaran penggunaan oleh pembeli (misalnya, mengubah detail login akun sharing, penggunaan yang melanggar ketentuan platform terkait).</li>
+                </ul>
+
+                <h3 class="text-md font-semibold text-main-dark pt-2">5. Penggunaan Akun</h3>
+                 <ul class="list-disc list-inside pl-4">
+                    <li>Untuk akun bersifat "sharing", pengguna dilarang keras mengubah informasi login (email, password) atau mengganggu kenyamanan pengguna lain dalam akun tersebut. Pelanggaran dapat mengakibatkan pencabutan akses secara sepihak tanpa pengembalian dana.</li>
+                    <li>Untuk akun "private", pengguna memiliki kendali penuh atas akun tersebut selama durasi pembelian dan bertanggung jawab atas keamanan akunnya sendiri setelah serah terima.</li>
+                    <li>Pengguna bertanggung jawab untuk menggunakan produk sesuai dengan syarat dan ketentuan dari penyedia layanan asli produk tersebut (misalnya, Netflix, Canva, dll.).</li>
+                </ul>
+
+                <h3 class="text-md font-semibold text-main-dark pt-2">6. Privasi Pengguna</h3>
+                 <ul class="list-disc list-inside pl-4">
+                    <li>Kami menghargai privasi Anda. Informasi pribadi yang Anda berikan (nama, nomor WhatsApp) hanya akan digunakan untuk keperluan transaksi dan komunikasi terkait pesanan.</li>
+                    <li>Kami tidak akan membagikan informasi pribadi Anda kepada pihak ketiga tanpa persetujuan Anda, kecuali diwajibkan oleh hukum.</li>
+                </ul>
+                
+                <h3 class="text-md font-semibold text-main-dark pt-2">7. Perubahan Syarat & Ketentuan</h3>
+                <p>Kami berhak untuk mengubah Syarat dan Ketentuan ini sewaktu-waktu tanpa pemberitahuan sebelumnya. Perubahan akan berlaku segera setelah dipublikasikan di halaman ini. Dianjurkan untuk meninjau halaman ini secara berkala.</p>
+
+                <h3 class="text-md font-semibold text-main-dark pt-2">8. Hukum yang Berlaku</h3>
+                <p>Syarat dan Ketentuan ini diatur oleh dan ditafsirkan sesuai dengan hukum yang berlaku di Indonesia.</p>
+
+                <p class="pt-3">Dengan melakukan transaksi di Epennzy Market, Anda menyatakan telah membaca, memahami, dan menyetujui seluruh Syarat dan Ketentuan ini.</p>
+                <p class="text-xs pt-2">Terakhir diperbarui: 5 Juni 2025</p>
+            </div>
+        </div>
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto flex justify-around items-center h-16 shadow-top z-50 bottom-nav-dark">
+            <button onclick="navigateTo('discoverPage')" data-page="discoverPage" class="bottom-nav-item flex flex-col items-center justify-center text-xs text-secondary-dark hover:text-emerald-400 pt-1 w-1/5"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 bottom-nav-icon-dark" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>Home</button>
+            <button onclick="handleSearchIconClick()" data-page="searchTrigger" class="bottom-nav-item flex flex-col items-center justify-center text-xs text-secondary-dark hover:text-emerald-400 pt-1 w-1/5"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 bottom-nav-icon-dark" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>Search</button>
+            <button onclick="navigateTo('infoPage')" data-page="infoPage" class="bottom-nav-item flex flex-col items-center justify-center text-xs text-secondary-dark hover:text-emerald-400 pt-1 w-1/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 bottom-nav-icon-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>Info
+            </button>
+            <button onclick="navigateTo('savedItemsPage')" data-page="savedItemsPage" class="bottom-nav-item flex flex-col items-center justify-center text-xs text-secondary-dark hover:text-emerald-400 pt-1 w-1/5"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 bottom-nav-icon-dark" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>Saved</button>
+            <button onclick="navigateTo('cartPage')" data-page="cartPage" class="relative bottom-nav-item flex flex-col items-center justify-center text-xs text-secondary-dark hover:text-emerald-400 pt-1 w-1/5"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 bottom-nav-icon-dark" viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" /></svg>Cart<span id="cartItemCount" class="absolute top-0 right-2.5 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center hidden">0</span></button>
+        </nav>
+    </div>
+
+    <div id="customModal" class="modal-container">
+        <div class="modal-content-dark modal-content p-6 rounded-lg shadow-xl">
+            <h3 id="modalTitle" class="modal-header-dark modal-header text-xl mb-4">Informasi</h3>
+            <div id="modalMessageText" class="modal-body-dark modal-body mb-6"></div>
+            <div class="flex justify-end">
+                <button id="modalClose" class="modal-close-button-dark py-2 px-4 rounded-md font-semibold">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="filterModal" class="modal-container">
+        <div class="modal-content-dark modal-content p-6 rounded-lg shadow-xl">
+            <h3 id="filterModalTitle" class="modal-header-dark modal-header text-xl mb-4">Filter Produk</h3>
+            <div id="filterModalBody" class="modal-body-dark modal-body mb-6">
+                <p class="text-sm mb-3">Opsi filter lanjutan akan tersedia di sini. Untuk saat ini, Anda dapat menggunakan pencarian berdasarkan nama atau kategori.</p>
+                <div class="mb-4">
+                    <label for="filterSortBy" class="block text-sm font-medium text-main-dark mb-1">Urutkan berdasarkan (Contoh):</label>
+                    <select id="filterSortBy" disabled class="w-full p-2 rounded-md input-dark bg-gray-700 opacity-50 cursor-not-allowed">
+                        <option value="default">Default</option>
+                        <option value="price_asc">Harga Terendah</option>
+                        <option value="price_desc">Harga Tertinggi</option>
+                    </select>
+                </div>
+                 <p class="text-xs text-gray-500">Fungsionalitas filter ini sedang dalam pengembangan.</p>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button id="filterModalApply" class="button-accent-dark py-2 px-4 rounded-md font-semibold opacity-50 cursor-not-allowed" disabled>Terapkan</button>
+                <button id="filterModalClose" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md font-semibold">Tutup</button>
+            </div>
+        </div>
+    </div>
+    
+    <button id="scrollToTopBtn" title="Kembali ke atas" class="hidden fixed bottom-20 right-5 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-opacity duration-300 z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+    </button>
+
+    <script>
+        let products = []; // Akan diisi dari products.json
+        const testimonials = [
+            { name: "Andi S.", feedback: "Pelayanan cepat dan produk sesuai deskripsi! Sangat recommended untuk langganan Netflix.", rating: 5 },
+            { name: "Budi P.", feedback: "Canva Pro lifetime-nya asli, sudah saya pakai berbulan-bulan tanpa kendala. Mantap!", rating: 5 },
+            { name: "Citra D.", feedback: "Awalnya ragu, tapi ternyata Alight Motion-nya berfungsi dengan baik. Adminnya responsif.", rating: 4 },
+            { name: "Dewi R.", feedback: "Harga YouTube Premium-nya sangat bersaing, suka sekali!", rating: 5 },
+            { name: "Eko F.", feedback: "Lumayan untuk CapCut Pro sharing, semoga nanti ada promo private yang lebih murah lagi.", rating: 4 }
+        ];
+        
+        let cart = JSON.parse(localStorage.getItem('epennzyCart')) || [];
+        let savedItems = JSON.parse(localStorage.getItem('epennzySavedItems')) || [];
+        let orderHistory = JSON.parse(localStorage.getItem('epennzyOrderHistory')) || [];
+
+        let currentFilterCategory = 'Semua';
+        let previousPage = 'discoverPage';
+        let currentProductIdForDetail = null; 
+        let lastFocusedElement = null; // Untuk manajemen fokus modal
+
+        const sellerWhatsAppConfirmationNumber = "089654291565"; 
+        const qrisImageUrl = "https://a.top4top.io/p_3437ncyws0.png"; 
+        const bcaAccountNameConst = "JAJANG NURJAMAN";
+
+        const productGrid = document.getElementById('productGrid');
+        const categoryContainer = document.getElementById('categoryContainer');
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const cartSubtotalEl = document.getElementById('cartSubtotal');
+        const cartTotalEl = document.getElementById('cartTotal');
+        const cartItemCountEl = document.getElementById('cartItemCount');
+        const savedItemsContainer = document.getElementById('savedItemsContainer');
+        const searchInput = document.getElementById('searchInput');
+        const searchContainerEl = document.getElementById('searchContainer'); 
+        const filterButtonEl = document.getElementById('filterButton'); 
+        const goToCheckoutButton = document.getElementById('goToCheckoutButton');
+        const customModalEl = document.getElementById('customModal');
+        const modalTitleEl = document.getElementById('modalTitle');
+        const modalMessageTextEl = document.getElementById('modalMessageText');
+        const modalCloseButton = document.getElementById('modalClose');
+        const filterModalEl = document.getElementById('filterModal');
+        const filterModalCloseButton = document.getElementById('filterModalClose');
+        const filterModalApplyButton = document.getElementById('filterModalApply');
+        const notificationButtonEl = document.getElementById('notificationButton');
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        const orderConfirmationTitleEl = document.getElementById('orderConfirmationTitle');
+        const orderConfirmationMessageEl = document.getElementById('orderConfirmationMessage');
+        const orderConfirmationIconEl = document.getElementById('orderConfirmationIcon');
+        const orderInfoEl = document.getElementById('orderInfo');
+        const finalWhatsAppButtonContainerEl = document.getElementById('finalWhatsAppButtonContainer');
+        const checkoutTotalAmountDisplayEl = document.getElementById('checkoutTotalAmountDisplay');
+        const qrisTotalAmountDisplayEl = document.getElementById('qrisTotalAmountDisplay');
+        const bcaAccountNameTextEl = document.getElementById('bcaAccountNameText');
+        const testimonialsSectionEl = document.getElementById('testimonialsSection');
+        const qrisPaidButton = document.getElementById('qrisPaidButton'); 
+        const orderHistoryContainerEl = document.getElementById('orderHistoryContainer');
+
+        function closeModal(modalElement) {
+            modalElement.classList.remove('active');
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+                lastFocusedElement = null; 
+            }
+        }
+        
+        if (modalCloseButton) modalCloseButton.onclick = function() { closeModal(customModalEl); }
+        if (filterModalEl) {
+            if (filterModalCloseButton) filterModalCloseButton.onclick = function() { closeModal(filterModalEl); }
+            if (filterModalApplyButton) filterModalApplyButton.onclick = function() { 
+                showCustomAlert('Penerapan filter belum diimplementasikan.', 'Info');
+                closeModal(filterModalEl); 
+            }
+        }
+        window.onclick = function(event) { 
+            if (event.target == customModalEl) { closeModal(customModalEl); }
+            if (event.target == filterModalEl) { closeModal(filterModalEl); }
+        }
+
+        if (notificationButtonEl) {
+            notificationButtonEl.onclick = () => { showCustomAlert('Belum ada notifikasi baru saat ini.', 'Notifikasi'); };
+        }
+        if (filterButtonEl) { 
+            filterButtonEl.onclick = () => { 
+                if (filterModalEl) {
+                    lastFocusedElement = document.activeElement;
+                    filterModalEl.classList.add('active'); 
+                    // Anda bisa memfokuskan elemen pertama di dalam modal filter di sini jika ada
+                    // document.getElementById('filterSortBy').focus(); // Contoh jika ada elemen interaktif
+                }
+                else showCustomAlert('Komponen modal filter tidak ditemukan.', 'Error');
+            };
+        }
+        if (scrollToTopBtn) {
+            window.onscroll = function() {
+                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                    scrollToTopBtn.classList.remove('hidden');
+                } else {
+                    scrollToTopBtn.classList.add('hidden');
+                }
+            };
+            scrollToTopBtn.onclick = function() { window.scrollTo({top: 0, behavior: 'smooth'}); }
+        }
+
+        function showCustomAlert(message, title = "Informasi") {
+            lastFocusedElement = document.activeElement;
+            modalTitleEl.textContent = title;
+            modalMessageTextEl.innerHTML = message;
+            customModalEl.classList.add('active');
+            modalCloseButton.focus();
+        }
+        function formatPrice(price) { return `Rp${price.toLocaleString('id-ID')}`; }
+        
+        function copyToClipboard(textToCopy, type) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    showCustomAlert(`${type} berhasil disalin!`, "Berhasil Disalin!");
+                }, function(err) {
+                    showCustomAlert(`Gagal menyalin ${type}. Coba salin manual.`, "Error");
+                    console.error('Async: Could not copy text: ', err);
+                });
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed"; 
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showCustomAlert(`${type} berhasil disalin!`, "Berhasil Disalin!");
+                } catch (err) {
+                    showCustomAlert(`Gagal menyalin ${type}. Coba salin manual.`, "Error");
+                    console.error('Fallback: Oops, unable to copy', err);
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function updateTestimonialsVisibility(filterText) {
+            if (testimonialsSectionEl) {
+                if (filterText && filterText.trim() !== '') {
+                    testimonialsSectionEl.classList.add('hidden');
+                } else {
+                    testimonialsSectionEl.classList.remove('hidden');
+                }
+            }
+        }
+
+        function renderProducts(filter = '', category = 'Semua') {
+            if (!productGrid) return;
+            productGrid.innerHTML = '';
+            const filteredProducts = products.filter(p => {
+                const nameMatch = p.name.toLowerCase().includes(filter.toLowerCase());
+                const descMatch = Array.isArray(p.description) ? p.description.join(' ').toLowerCase().includes(filter.toLowerCase()) : false;
+                const catMatch = p.category.toLowerCase().includes(filter.toLowerCase());
+                const categoryFilterMatch = category === 'Semua' || p.category.startsWith(category);
+                return (nameMatch || descMatch || catMatch) && categoryFilterMatch;
+            });
+            if (filteredProducts.length === 0) { 
+                productGrid.innerHTML = `<p class="col-span-full text-center text-secondary-dark">Tidak ada produk yang cocok.</p>`; 
+            } else {
+                filteredProducts.forEach(product => {
+                    const isSaved = savedItems.some(item => item.id === product.id);
+                    productGrid.innerHTML += `
+                        <div class="product-card card-dark rounded-lg shadow-md overflow-hidden cursor-pointer" onclick="showProductDetail('${product.id}')" tabindex="0" role="button" aria-label="Lihat detail ${product.name}">
+                            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-32 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/300x300/374151/9CA3AF?text=Error';">
+                            <div class="p-3">
+                                <h3 class="text-sm font-semibold text-main-dark truncate" title="${product.name}">${product.name}</h3>
+                                <p class="text-xs text-secondary-dark mb-1">${product.duration}</p>
+                                <div class="flex justify-between items-center">
+                                    <p class="text-md font-bold text-accent-dark">${formatPrice(product.price)}</p>
+                                    <button onclick="event.stopPropagation(); toggleSaveItem('${product.id}', this)" aria-label="${isSaved ? 'Hapus dari tersimpan' : 'Simpan item'}" class="text-gray-600 hover:text-red-500 p-1 rounded-full ${isSaved ? 'text-red-500' : 'text-gray-500'}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg></button>
+                                </div></div></div>`;
+                });
+            }
+            updateTestimonialsVisibility(filter);
+        }
+
+        function renderCategories() {
+            if(!categoryContainer) return;
+            const uniqueCategories = ['Semua', ...new Set(products.map(p => p.category.split(" - ")[0].trim()))];
+            if (!categoryContainer.hasAttribute('role')) { // Atribut ARIA untuk tablist
+                categoryContainer.setAttribute('role', 'tablist');
+            }
+            categoryContainer.innerHTML = '';
+            uniqueCategories.forEach(category => {
+                const isActive = category === currentFilterCategory;
+                categoryContainer.innerHTML += `
+                    <button role="tab" aria-selected="${isActive}" 
+                            class="px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${isActive ? 'active-category-dark' : 'inactive-category-dark'} hover:opacity-80 transition" 
+                            onclick="filterByCategory('${category}')">
+                        ${category}
+                    </button>`;
+            });
+        }
+        function filterByCategory(category) { 
+            currentFilterCategory = category; 
+            renderCategories(); 
+            renderProducts(searchInput.value, category);
+        }
+        function showProductDetail(productId) {
+            const product = products.find(p => p.id === productId); if (!product) return;
+            previousPage = getCurrentPageId();
+            currentProductIdForDetail = productId; 
+            document.getElementById('productDetailName').textContent = product.name;
+            document.getElementById('productDetailImage').src = product.imageUrl;
+            document.getElementById('productDetailImage').alt = product.name; // Update alt text
+            document.getElementById('productDetailImage').onerror = function() { this.src='https://placehold.co/600x400/374151/9CA3AF?text=Error'; this.alt='Gambar produk tidak tersedia';};
+            document.getElementById('productDetailPrice').textContent = formatPrice(product.price);
+            document.getElementById('productDetailDuration').textContent = `Durasi: ${product.duration}`;
+            const descriptionEl = document.getElementById('productDetailDescription'); descriptionEl.innerHTML = '';
+            if (Array.isArray(product.description)) {
+                product.description.forEach(point => { const li = document.createElement('li'); li.textContent = point; descriptionEl.appendChild(li); });
+            }
+            const saveButton = document.getElementById('productDetailSaveButton'); const isSaved = savedItems.some(item => item.id === product.id);
+            saveButton.classList.toggle('text-red-500', isSaved); saveButton.classList.toggle('text-gray-500', !isSaved);
+            saveButton.setAttribute('aria-label', isSaved ? 'Hapus dari tersimpan' : 'Simpan item');
+            saveButton.onclick = () => toggleSaveItem(product.id, saveButton.querySelector('svg'), true);
+            document.getElementById('productDetailAddToCartButton').onclick = () => { addToCart(product.id); showCustomAlert(`${product.name} telah ditambahkan ke keranjang!`, "Sukses"); };
+            document.getElementById('getUsageIdeasButton').onclick = () => getUsageIdeas(product.name, product.category);
+            document.getElementById('productDetailShareButton').onclick = () => shareProduct(product.id);
+            navigateTo('productDetailPage');
+        }
+
+        async function shareProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            const shareData = {
+                title: product.name,
+                text: `Cek produk ini di Epennzy Market: ${product.name} - ${formatPrice(product.price)}`,
+                url: window.location.href.split('#')[0] 
+            };
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                    showCustomAlert('Produk berhasil dibagikan!', 'Sukses');
+                } else {
+                    copyToClipboard(shareData.url, 'Link Aplikasi');
+                    showCustomAlert('Link aplikasi telah disalin ke clipboard. Anda bisa membagikannya secara manual.\nFitur bagikan native tidak didukung browser Anda.', 'Info');
+                }
+            } catch (err) {
+                console.error('Error sharing:', err);
+                showCustomAlert(`Gagal membagikan: ${err.message}`, 'Error');
+            }
+        }
+
+        async function getUsageIdeas(productName, productCategory) { 
+            showCustomAlert("Sedang memuat ide penggunaan dari Gemini... ✨ <div class='mt-2 w-6 h-6 border-2 border-t-transparent border-white rounded-full animate-spin mx-auto'></div>", "Memuat...");
+            const prompt = `Berikan 3-5 ide kreatif atau tips singkat dan bermanfaat tentang cara penggunaan produk "${productName}" (${productCategory}). Buat dalam format poin-poin singkat dan jelas, masing-masing poin diawali dengan tanda hubung (-). Contoh untuk Canva: - Buat CV menarik. - Desain postingan Instagram. - Bikin presentasi memukau.`;
+            const apiKey = "AIzaSyAnwwg7pzHVks_QU5lSXT0EQNkJoyEwSPM"; 
+            if (!apiKey) {
+                showCustomAlert("API Key Gemini belum diatur. Fitur ide penggunaan tidak dapat berfungsi.", "Konfigurasi Diperlukan");
+                return;
+            }
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{text: prompt}] }] }) });
+                if (!response.ok) { const errorData = await response.json(); console.error("Gemini API Error:", errorData); showCustomAlert(`Maaf, terjadi kesalahan saat mengambil ide: ${errorData.error?.message || response.statusText}`, "Kesalahan API"); return; }
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    let formattedText = text.split('\n').map(line => { line = line.trim(); if (line.startsWith('-') || line.startsWith('*') || /^\d+\./.test(line)) { return `<li>${line.substring(line.indexOf(' ')+1).trim()}</li>`; } return line ? `<p>${line}</p>` : ''; }).join('');
+                    if (formattedText.includes('<li>')) formattedText = '<ul>' + formattedText + '</ul>';
+                    showCustomAlert(formattedText || "Tidak ada ide penggunaan yang spesifik saat ini.", `✨ Ide untuk ${productName}`);
+                } else { console.error("Unexpected Gemini API response structure:", result); showCustomAlert("Tidak ada ide yang ditemukan atau format respons tidak sesuai.", "Info"); }
+            } catch (error) { console.error("Fetch error for Gemini API:", error); showCustomAlert("Gagal terhubung ke layanan ide. Silakan coba lagi nanti.", "Kesalahan Jaringan"); }
+        }
+        function getCurrentPageId() { for (let page of document.querySelectorAll('.page')) { if (page.style.display !== 'none' && page.classList.contains('active')) { return page.id; }} return 'discoverPage';}
+        function goBack() { navigateTo(previousPage || 'discoverPage'); }
+        
+        function addToCart(productId) { 
+            const product = products.find(p => p.id === productId); if (!product) return; 
+            if (cart.find(item => item.id === productId)) { showCustomAlert(`${product.name} sudah ada di keranjang.`, "Info"); } 
+            else { cart.push({ ...product, quantity: 1 }); } 
+            updateCart(); 
+        }
+        function removeFromCart(productId) { cart = cart.filter(item => item.id !== productId); updateCart(); }
+        
+        function updateCart() {
+            if(!cartItemsContainer || !goToCheckoutButton || !cartSubtotalEl || !cartTotalEl || !cartItemCountEl) return;
+            cartItemsContainer.innerHTML = '';
+            if (cart.length === 0) { cartItemsContainer.innerHTML = '<p class="text-secondary-dark text-center">Keranjang belanja Anda kosong.</p>'; goToCheckoutButton.disabled = true; } 
+            else { goToCheckoutButton.disabled = false; cart.forEach(item => { cartItemsContainer.innerHTML += `<div class="flex items-center card-dark p-3 rounded-lg border border-gray-700 shadow-sm"><img src="${item.imageUrl}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md mr-3" onerror="this.onerror=null;this.src='https://placehold.co/100x100/374151/9CA3AF?text=Error';"><div class="flex-grow"><h4 class="text-sm font-semibold text-main-dark">${item.name}</h4><p class="text-xs text-secondary-dark">${item.duration}</p><p class="text-sm font-semibold text-accent-dark">${formatPrice(item.price)}</p></div><button onclick="removeFromCart('${item.id}')" aria-label="Hapus ${item.name} dari keranjang" class="text-red-500 hover:text-red-700 ml-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button></div>`; });}
+            const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            cartSubtotalEl.textContent = formatPrice(subtotal); cartTotalEl.textContent = formatPrice(subtotal); 
+            if(checkoutTotalAmountDisplayEl) checkoutTotalAmountDisplayEl.textContent = formatPrice(subtotal);
+            if(qrisTotalAmountDisplayEl) qrisTotalAmountDisplayEl.textContent = formatPrice(subtotal);
+            cartItemCountEl.textContent = cart.length; cartItemCountEl.classList.toggle('hidden', cart.length === 0);
+            localStorage.setItem('epennzyCart', JSON.stringify(cart));
+        }
+        
+        function toggleSaveItem(productId, iconElement, isFromDetailPage = false) { 
+            const productIndex = savedItems.findIndex(item => item.id === productId); const product = products.find(p => p.id === productId);
+            if (!product) return; 
+            if (productIndex > -1) { savedItems.splice(productIndex, 1); if (iconElement) iconElement.classList.replace('text-red-500', 'text-gray-500'); if (isFromDetailPage) { document.getElementById('productDetailSaveButton').classList.replace('text-red-500', 'text-gray-500'); document.getElementById('productDetailSaveButton').setAttribute('aria-label', 'Simpan item');} showCustomAlert(`${product.name} dihapus dari item tersimpan.`, "Info");} 
+            else { const productToSave = products.find(p => p.id === productId); if (productToSave) { savedItems.push(productToSave); if (iconElement) iconElement.classList.replace('text-gray-500','text-red-500'); if (isFromDetailPage) {document.getElementById('productDetailSaveButton').classList.replace('text-gray-500','text-red-500'); document.getElementById('productDetailSaveButton').setAttribute('aria-label', 'Hapus dari tersimpan');} showCustomAlert(`${product.name} disimpan!`, "Sukses");}}
+            updateSavedItemsPage(); if (getCurrentPageId() === 'discoverPage' && !isFromDetailPage) { renderProducts(searchInput.value, currentFilterCategory); }
+            localStorage.setItem('epennzySavedItems', JSON.stringify(savedItems));
+        }
+
+        function updateSavedItemsPage() { 
+            if(!savedItemsContainer) return;
+            savedItemsContainer.innerHTML = '';
+            if (savedItems.length === 0) { savedItemsContainer.innerHTML = '<p class="text-secondary-dark text-center">Belum ada item yang disimpan.</p>';} 
+            else { savedItems.forEach(item => { savedItemsContainer.innerHTML += `<div class="flex items-center card-dark p-3 rounded-lg border border-gray-700 shadow-sm"><img src="${item.imageUrl}" alt="${item.name}" class="w-20 h-20 object-cover rounded-md mr-4" onerror="this.onerror=null;this.src='https://placehold.co/100x100/374151/9CA3AF?text=Error';"><div class="flex-grow"><h4 class="text-md font-semibold text-main-dark">${item.name}</h4><p class="text-sm text-secondary-dark">${item.duration}</p><p class="text-lg font-bold text-accent-dark">${formatPrice(item.price)}</p></div><div class="flex flex-col space-y-2 ml-2"><button onclick="addToCart('${item.id}'); showCustomAlert('${item.name} ditambahkan ke keranjang.', 'Sukses');" class="p-2 button-accent-dark rounded-md text-xs">Add to Cart</button><button onclick="toggleSaveItem('${item.id}');" class="p-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs">Unsave</button></div></div>`;});}
+        }
+        
+        function saveOrderToHistory(paymentMethod) {
+            const buyerNameInput = document.getElementById('buyerName');
+            const buyerWhatsAppInput = document.getElementById('buyerWhatsApp');
+            const buyerName = buyerNameInput ? buyerNameInput.value : "Pelanggan";
+            const buyerWhatsAppNum = buyerWhatsAppInput ? buyerWhatsAppInput.value : "Tidak diketahui";
+
+            if (cart.length === 0) return;
+            const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const orderItems = cart.map(item => ({ id: item.id, name: item.name, price: item.price, quantity: item.quantity, duration: item.duration, imageUrl: item.imageUrl }));
+            const newOrder = { id: Date.now(), date: new Date().toISOString(), items: orderItems, totalAmount: totalAmount, buyerName: buyerName, buyerWhatsApp: buyerWhatsAppNum, paymentMethod: paymentMethod, status: "Menunggu Konfirmasi Penjual" };
+            orderHistory.push(newOrder);
+            localStorage.setItem('epennzyOrderHistory', JSON.stringify(orderHistory));
+            cart = [];
+            updateCart();
+        }
+
+        function renderOrderHistoryPage() {
+            if (!orderHistoryContainerEl) return;
+            orderHistoryContainerEl.innerHTML = '';
+            if (orderHistory.length === 0) {
+                orderHistoryContainerEl.innerHTML = '<p class="text-secondary-dark text-center">Belum ada riwayat pesanan.</p>';
+                return;
+            }
+            const sortedHistory = [...orderHistory].sort((a,b) => new Date(b.date) - new Date(a.date));
+            sortedHistory.forEach(order => {
+                const orderDate = new Date(order.date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                let itemsHtml = '<ul class="list-disc list-inside pl-1 text-xs">';
+                order.items.forEach(item => { itemsHtml += `<li>${item.name} (${item.duration}) - ${formatPrice(item.price)}</li>`; });
+                itemsHtml += '</ul>';
+                orderHistoryContainerEl.innerHTML += `
+                    <div class="order-history-item">
+                        <h4 class="text-sm font-semibold">Pesanan #${order.id}</h4>
+                        <p class="text-xs">Tanggal: ${orderDate}</p>
+                        <p class="text-xs">Nama Pembeli: ${order.buyerName} (WA: ${order.buyerWhatsApp || 'N/A'})</p>
+                        <p class="text-xs">Total: <strong class="text-accent-dark">${formatPrice(order.totalAmount)}</strong></p>
+                        <p class="text-xs">Metode Pembayaran: ${order.paymentMethod}</p>
+                        <p class="text-xs">Status: <span class="font-semibold ${order.status === 'Selesai' ? 'text-green-400' : 'text-yellow-400'}">${order.status}</span></p>
+                        <p class="mt-1 text-xs">Item Dipesan:</p>
+                        ${itemsHtml}
+                    </div>`;
+            });
+        }
+
+        function prepareWhatsAppMessage(paymentMethod = "Transfer Manual") { 
+            const buyerNameInput = document.getElementById('buyerName');
+            const buyerWhatsAppInput = document.getElementById('buyerWhatsApp');
+            const buyerName = buyerNameInput ? buyerNameInput.value : "Pelanggan";
+            const buyerWhatsAppNum = buyerWhatsAppInput ? buyerWhatsAppInput.value : "Tidak diketahui";
+            if (cart.length === 0) { showCustomAlert("Keranjang Anda kosong.", "Info"); return null;}
+            let message = `Halo Epennzy Market,\n\nSaya ${buyerName} (WA: ${buyerWhatsAppNum}) ingin konfirmasi pembayaran untuk pesanan berikut:\n(Order ID: ${Date.now()})\n\n`;
+            let totalAmount = 0;
+            cart.forEach(item => { message += `- ${item.name} (${item.duration}) - ${formatPrice(item.price)}\n`; totalAmount += item.price; });
+            message += `\nTotal Pembayaran: ${formatPrice(totalAmount)}\nMetode Pembayaran: ${paymentMethod}\n\nSaya akan segera mengirimkan bukti transfer.\nMohon info untuk pengambilan data produknya. Terima kasih.`;
+            return encodeURIComponent(message);
+        }
+
+        function prepareAndConfirmOrder(paymentMethodDisplay, paymentMethodInternal) {
+            const buyerNameInput = document.getElementById('buyerName');
+            const buyerWhatsAppInput = document.getElementById('buyerWhatsApp');
+            if ( (paymentMethodInternal !== "QRIS Direct") && (!buyerNameInput.value || !buyerWhatsAppInput.value)) {
+                 showCustomAlert("Mohon isi Nama Lengkap dan Nomor WhatsApp Anda di halaman Checkout terlebih dahulu untuk konfirmasi.", "Info Penting");
+                 if(paymentMethodInternal === "QRIS") navigateTo('checkoutPage'); 
+                 return;
+            }
+            const encodedMessage = prepareWhatsAppMessage(paymentMethodDisplay);
+            if (encodedMessage) {
+                saveOrderToHistory(paymentMethodDisplay); 
+                const waUrl = `https://wa.me/${sellerWhatsAppConfirmationNumber}?text=${encodedMessage}`;
+                orderConfirmationTitleEl.textContent = `Langkah Terakhir: Konfirmasi via WhatsApp (${paymentMethodDisplay})`;
+                orderConfirmationMessageEl.textContent = "Pembayaran Anda bersifat manual. Silakan klik tombol di bawah untuk mengirim detail pesanan Anda ke WhatsApp kami dan lampirkan bukti transfer.";
+                orderInfoEl.innerHTML = `<p class="text-sm">Pastikan Anda sudah melakukan transfer dan menyiapkan bukti transfernya.</p>`;
+                finalWhatsAppButtonContainerEl.innerHTML = `<a href="${waUrl}" target="_blank" class="w-full button-accent-dark py-3 rounded-lg font-semibold transition inline-block">Chat Penjual via WhatsApp Sekarang</a>`;
+                orderConfirmationIconEl.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />`; 
+                orderConfirmationIconEl.classList.remove('text-emerald-400', 'text-yellow-400'); orderConfirmationIconEl.classList.add('text-blue-400');
+                navigateTo('orderConfirmationPage');
+            }
+        }
+
+        if(document.getElementById('confirmViaWhatsAppButton')) {
+            document.getElementById('confirmViaWhatsAppButton').addEventListener('click', function() { 
+                prepareAndConfirmOrder("Transfer Manual (GoPay/Dana/BCA)", "Manual");
+            });
+        }
+        if(qrisPaidButton) {
+            qrisPaidButton.addEventListener('click', function() {
+                prepareAndConfirmOrder("QRIS", "QRIS");
+            });
+        }
+        
+        function renderTestimonials() {
+            const testimonialsContainer = document.getElementById('testimonialsContainer');
+            if (!testimonialsContainer) return; 
+            testimonialsContainer.innerHTML = '';
+            testimonials.forEach(testimonial => {
+                testimonialsContainer.innerHTML += `
+                    <div class="card-dark p-4 rounded-lg border border-gray-700 shadow-sm">
+                        <p class="text-main-dark text-sm mb-2">"${testimonial.feedback}"</p>
+                        <p class="text-secondary-dark text-xs font-semibold">- ${testimonial.name} (${'⭐'.repeat(testimonial.rating)})</p>
+                    </div>`;
+            });
+        }
+        
+        function handleSearchIconClick() { navigateTo('discoverPage', { openSearch: true }); }
+
+        function navigateTo(pageId, context = {}) { 
+            document.querySelectorAll('.page').forEach(page => { page.classList.remove('active'); });
+            
+            setTimeout(() => {
+                document.querySelectorAll('.page').forEach(p => { if(p.id !== pageId) p.style.display = 'none'; });
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) { 
+                    targetPage.style.display = 'block';
+                    targetPage.offsetHeight; 
+                    targetPage.classList.add('active');
+                } else { 
+                    const discoverP = document.getElementById('discoverPage');
+                    if(discoverP) {
+                        discoverP.style.display = 'block';
+                        discoverP.offsetHeight;
+                        discoverP.classList.add('active');
+                    }
+                    pageId = 'discoverPage'; // Fallback
+                }
+                window.scrollTo(0, 0); 
+
+                if (searchContainerEl && searchInput) {
+                    if (pageId === 'discoverPage') {
+                        if (context.openSearch) {
+                            searchContainerEl.classList.remove('hidden');
+                            searchInput.focus();
+                        } else { 
+                            searchContainerEl.classList.add('hidden');
+                            if (searchInput.value !== '') { 
+                                searchInput.value = '';
+                                renderProducts('', currentFilterCategory); 
+                            } else { updateTestimonialsVisibility(''); }
+                        }
+                    } else { searchContainerEl.classList.add('hidden'); }
+                }
+            }, 50); 
+
+            document.querySelectorAll('.bottom-nav-item svg.bottom-nav-icon-dark').forEach(icon => icon.classList.remove('active'));
+            const activeNavItem = document.querySelector(`.bottom-nav-item[data-page='${pageId}'] svg.bottom-nav-icon-dark`);
+            if (activeNavItem) { 
+                activeNavItem.classList.add('active'); 
+            } else if (pageId === 'searchTrigger' || (context && context.openSearch && pageId === 'discoverPage')) {
+                const searchNavIcon = document.querySelector(".bottom-nav-item[data-page='searchTrigger'] svg.bottom-nav-icon-dark");
+                if (searchNavIcon) searchNavIcon.classList.add('active');
+            } else if (['productDetailPage', 'checkoutPage', 'orderConfirmationPage', 'qrisPage', 'faqPage', 'contactPage', 'termsPage'].includes(pageId)) { 
+                let sourcePageForNav = previousPage;
+                if (['checkoutPage', 'orderConfirmationPage', 'qrisPage'].includes(pageId)) sourcePageForNav = 'cartPage';
+                else if (['faqPage', 'contactPage', 'termsPage'].includes(pageId)) sourcePageForNav = 'infoPage';
+                else if (previousPage === 'cartPage') sourcePageForNav = 'cartPage';
+                else if (previousPage === 'savedItemsPage') sourcePageForNav = 'savedItemsPage';
+                else if (previousPage === 'infoPage') sourcePageForNav = 'infoPage';
+                else sourcePageForNav = 'discoverPage';
+                
+                const sourceNavItem = document.querySelector(`.bottom-nav-item[data-page='${sourcePageForNav}'] svg.bottom-nav-icon-dark`);
+                if (sourceNavItem) { sourceNavItem.classList.add('active');}
+                 else { document.querySelector(".bottom-nav-item[data-page='discoverPage'] svg.bottom-nav-icon-dark")?.classList.add('active'); }
+            } else { 
+                 document.querySelector(".bottom-nav-item[data-page='discoverPage'] svg.bottom-nav-icon-dark")?.classList.add('active');
+            }
+
+            if (pageId === 'cartPage' || pageId === 'checkoutPage' || pageId === 'qrisPage') { updateCart(); } 
+            else if (pageId === 'savedItemsPage') { updateSavedItemsPage(); } 
+            else if (pageId === 'orderHistoryPage') { renderOrderHistoryPage(); }
+
+            if (pageId === 'qrisPage' && document.getElementById('qrisImage')) { document.getElementById('qrisImage').src = qrisImageUrl; }
+            if(pageId === 'checkoutPage' && bcaAccountNameTextEl){ bcaAccountNameTextEl.textContent = bcaAccountNameConst;}
+        }
+
+        if(searchInput) {
+            searchInput.addEventListener('input', (e) => { 
+                renderProducts(e.target.value, currentFilterCategory); 
+            });
+        }
+        
+        async function loadProductsAndInitialize() {
+            try {
+                const response = await fetch('products.json'); 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                products = await response.json();
+                
+                // Panggil fungsi yang bergantung pada data produk setelah dimuat
+                renderCategories();
+                renderProducts();
+                renderTestimonials(); 
+                updateCart(); 
+                navigateTo('discoverPage'); // Halaman awal
+                
+                if(bcaAccountNameTextEl) bcaAccountNameTextEl.textContent = bcaAccountNameConst; 
+
+                const storedBuyerName = localStorage.getItem('epennzyBuyerName');
+                const storedBuyerWhatsApp = localStorage.getItem('epennzyBuyerWhatsApp');
+                const buyerNameInput = document.getElementById('buyerName');
+                const buyerWhatsAppInput = document.getElementById('buyerWhatsApp');
+
+                if (buyerNameInput && storedBuyerName) buyerNameInput.value = storedBuyerName;
+                if (buyerWhatsAppInput && storedBuyerWhatsApp) buyerWhatsAppInput.value = storedBuyerWhatsApp;
+
+                if (buyerNameInput) {
+                    buyerNameInput.addEventListener('input', (e) => localStorage.setItem('epennzyBuyerName', e.target.value));
+                }
+                if (buyerWhatsAppInput) {
+                    buyerWhatsAppInput.addEventListener('input', (e) => localStorage.setItem('epennzyBuyerWhatsApp', e.target.value));
+                }
+
+            } catch (error) {
+                console.error("Could not load products or initialize app:", error);
+                if(productGrid) productGrid.innerHTML = `<p class="col-span-full text-center text-red-400 p-4 bg-red-900 bg-opacity-30 rounded">Gagal memuat data produk. Pastikan file 'products.json' ada di folder yang sama dan formatnya benar. Silakan coba muat ulang halaman.</p>`;
+                // Tampilkan pesan error yang lebih ramah ke pengguna di UI
+                showCustomAlert("Tidak dapat memuat data produk. Silakan coba lagi nanti.", "Kesalahan Data");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProductsAndInitialize);
+    </script>
+</body>
+</html>
